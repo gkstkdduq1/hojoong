@@ -25,28 +25,28 @@ while True:
     df = pd.DataFrame(data)
     df = df.reindex(index=df.index[::-1]).reset_index()
     df = df[-5:]
-    df['range'] = (df['high_price'] - df['low_price']) * 0.1
+    ma = df['trade_price'].mean()
+    df['range'] = (df['high_price'] - df['low_price']) * 0.5
     df['target'] = df['opening_price'] + df['range'].shift(1)
 
     df = df[-1:]
-    ma5 = df['trade_price'].mean()
-    df['bull'] = df['opening_price'] > ma5
-    bull_flag = df['bull'].values[0]
+
+    bull_flag = cur_price > ma
+
     cur_price = pyupbit.get_current_price(ticker)
     target_price = df['target'].values[0]
+    signal = cur_price > target_price and bull_flag
     if cur_price > target_price and bull_flag and balance == 0:
         buyprice = pyupbit.get_current_price(ticker)
         balance = 1
 
-    if not df['bull'].values[0] & balance == 0:
+    if not bull_flag and balance == 1:
         sellprice = pyupbit.get_current_price(ticker)
         ror = ror * (sellprice / buyprice - fee)
-        banance = 0
+        balance = 0
 
-    print('Upbit 1 minute ', ticker, ',cur_price : ', cur_price, ',target: ', target_price, ',bull: ', bull_flag,
-          ',ror:', ror, end='\r')
+    print('signal', signal, ', Upbit 1 minute ', ticker, ', cur_price : ', cur_price, ', target: ', target_price,
+          ', bull: ', bull_flag, ', balance:', balance, ', ma:', ma, ', ror:', round(ror, 4), end='\r')
 
     time.sleep(1)
-
-
 
