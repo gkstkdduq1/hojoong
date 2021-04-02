@@ -1,9 +1,8 @@
 import pyupbit
-
+from tqdm import tqdm
 import requests
 import pandas as pd
 import time
-from tqdm import tqdm
 
 access_key = "Uc7gjRjwxKWtqi3CzE8eBa0GBxKEuvxstqy4VBux"
 secret_key = "BuXKRKaxcPdhL8Htpl1cGsVbqGh0zd10DHVLLxWB"
@@ -33,14 +32,12 @@ trade_price_df = pd.DataFrame(list(zip(trade_price_list, change_list)), index=ti
                               columns=['trade_price', 'change'])
 trade_price_df.sort_values(by=['trade_price'], ascending=False, inplace=True)
 ticker_list = trade_price_df.iloc[:10].index.tolist()
-print(ticker_list)xc
+print(ticker_list)
 
-ticker_list = [ 'KRW-MED']
 while True:
     for ticker in ticker_list:
-        while True:
-
-
+        buy_signal = 1
+        while buy_signal:
             url = "https://api.upbit.com/v1/candles/minutes/10"
 
             querystring = {"market": ticker, "count": "500"}
@@ -49,28 +46,37 @@ while True:
             data = response.json()
             df = pd.DataFrame(data)
             df = df.reindex(index=df.index[::-1]).reset_index()
-            df = df[-20:]
-            ma20 = df['trade_price'].mean()
+            df = df[-50:]
+            df['ma5'] = df['trade_price'].rolling(window=5).mean()
+            df['ma20'] = df['trade_price'].rolling(window=20).mean()
+            df['ma50'] = df['trade_price'].rolling(window=50).mean()
+            df['sma5_diff'] = df['ma5'].diff()
+            df['range'] = (df['high_price'] - df['low_price']) * 0.7
+            df['target1'] = df['opening_price'] + df['range'].shift(1)
+            df['target2'] = df['opening_price'] * 1.003
 
-            df = df[-5:]
-            ma10 = df['trade_price'].mean()
-            df['range'] = (df['high_price'] - df['low_price']) * 0.5
-            df['target'] = df['opening_price'] + df['range'].shift(1)
             df = df[-1:]
+
             cur_price = pyupbit.get_current_price(ticker)
-            bull_flag = cur_price > ma10 and cur_price > ma20
-            target_price = df['target'].values[0]
-            signal = bull_flag and cur_price > target_price
+            target_price1 = df['target1'].values[0]
+            target_price2 = df['target2'].values[0]
+            sma5_diff = df['sma5_diff'].values[0]
+            ma5 = df['ma5'].values[0]
+            ma20 = df['ma20'].values[0]
+            ma50 = df['ma50'].values[0]
+
+            sell_signal = sma5_diff < 1 or cur_price < ma5
+            buy_signal = not sell_signal and cur_price > target_price1 and cur_price > target_price2 and cur_price > ma20 and ma5 > ma20 > ma50
 
 
             # buy here
-            if signal and balance == 0:
+            if buy_signal and balance == 0:
                 buyprice = pyupbit.get_current_price(ticker)
                 balance = 1
                 print('buy', ticker, 'at', buyprice)
 
             # sell here
-            if not bull_flag and balance == 1:
+            if sell_signal and balance == 1:
                 sellprice = pyupbit.get_current_price(ticker)
                 ror = ror * ((sellprice / buyprice) - fee)
                 balance = 0
@@ -79,18 +85,14 @@ while True:
 
             if balance == 1:
                 ror_now = (cur_price / buyprice) - fee
-                print(', Upbit 1 minute ', ticker, ', ror:', round(ror_now, 4), 'signal', signal, ', cur_price : ',
+                print(', Upbit 1 minute ', ticker, ', ror:', round(ror_now, 4), 'buy_signal', buy_signal, ', cur_price : ',
                       cur_price,
-                      ', target: ', target_price, ', bull: ', bull_flag, ', balance:', balance, '              ',
-                      end='\r')
+                      ', target: ', target_price1, ', balance:', balance, end='\r')
             if balance == 0:
-                print(', Upbit 1 minute ', ticker, ', ror:', round(ror, 4), 'signal', signal, ', cur_price : ',
+                print(', Upbit 1 minute ', ticker, ', ror:', round(ror, 4), 'buy_signal', buy_signal, ', cur_price : ',
                       cur_price,
-                      ', target: ', target_price, ', bull: ', bull_flag, ', balance:', balance, '              ',
-                      end='\r')
+                      ', target: ', target_price1, ', balance:', balance, end='\r')
+
             time.sleep(0.1)
-            if balance == 0 and not signal:
+            if balance == 0 and not buy_signal:
                 break
-
-
-
