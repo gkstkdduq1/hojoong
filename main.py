@@ -87,11 +87,11 @@ while True:
                 ror_now = (cur_price / buyprice) - fee
                 print(', Upbit 1 minute ', ticker, ', ror:', round(ror_now, 4), 'buy_signal', buy_signal, ', cur_price : ',
                       cur_price,
-                      ', target: ', target_price1, ', balance:', balance, end='\r')
+                      ', target: ', target_price1, ', balance:', balance, '          ', end='\r')
             if balance == 0:
                 print(', Upbit 1 minute ', ticker, ', ror:', round(ror, 4), 'buy_signal', buy_signal, ', cur_price : ',
                       cur_price,
-                      ', target: ', target_price1, ', balance:', balance, end='\r')
+                      ', target: ', target_price1, ', balance:', balance,'          ',  end='\r')
 
             time.sleep(0.1)
             if balance == 0 and not buy_signal:
