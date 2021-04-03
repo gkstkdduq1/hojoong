@@ -70,7 +70,7 @@ print(ticker_list)
 while True:
     for ticker in ticker_list:
         while True:
-            url = "https://api.upbit.com/v1/candles/minutes/60"
+            url = "https://api.upbit.com/v1/candles/minutes/10"
 
             querystring = {"market": ticker, "count": "500"}
 
@@ -99,10 +99,10 @@ while True:
             ma20 = df['ma20'].values[0]
             ma50 = df['ma50'].values[0]
 
-            sell_signal = sma5_diff < 1 or cur_price < ma5
+            sell_signal = sma5_diff < 0 or cur_price < ma5
             # buy_signal = not sell_signal and cur_price > target_price1 and cur_price > target_price2 and cur_price
             # > ma20 and ma5 > ma20 > ma50
-            buy_signal = not sell_signal and cur_price > target_price and cur_price > ma5 > ma20 > ma50
+            buy_signal = cur_price > target_price and cur_price > ma5 > ma20 > ma50
 
             # buy here
             if buy_signal and balance == 0:
@@ -142,7 +142,7 @@ while True:
                 requests.post(kakao_url, headers=headers, data=kakao_data)
 
             if balance == 1:
-                ror_now = (cur_price / buyprice) - fee
+                ror_now = ror * (cur_price / buyprice) - fee
                 print('10 minute ', ticker, ', ror:', round(ror_now, 4), ', buy_signal', buy_signal, ', cur_price : ',
                       cur_price,
                       ', target: ', target_price, ', balance:', balance, '          ', end='\r')
