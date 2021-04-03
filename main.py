@@ -3,6 +3,28 @@ from tqdm import tqdm
 import requests
 import pandas as pd
 import time
+import json
+
+with open("kakao_code.json", "r") as fp:
+    tokens = json.load(fp)
+
+url = "https://kauth.kakao.com/oauth/token"
+data = {
+    "grant_type": "refresh_token",
+    "client_id": "6bea89b579e0495940a0b8989903b22f",
+    "refresh_token": tokens["refresh_token"]
+}
+response = requests.post(url, data=data)
+tokens = response.json()
+
+with open("kakao_code.json", "w") as fp:
+    json.dump(tokens, fp)
+
+kakao_url = "https://kapi.kakao.com/v2/api/talk/memo/default/send"
+
+headers = {
+    "Authorization": "Bearer " + tokens["access_token"]
+}
 
 access_key = "Uc7gjRjwxKWtqi3CzE8eBa0GBxKEuvxstqy4VBux"
 secret_key = "BuXKRKaxcPdhL8Htpl1cGsVbqGh0zd10DHVLLxWB"
@@ -67,12 +89,23 @@ while True:
             sell_signal = sma5_diff < 1 or cur_price < ma5
             buy_signal = not sell_signal and cur_price > target_price1 and cur_price > target_price2 and cur_price > ma20 and ma5 > ma20 > ma50
 
-
             # buy here
             if buy_signal and balance == 0:
                 buyprice = pyupbit.get_current_price(ticker)
                 balance = 1
                 print('buy', ticker, 'at', buyprice)
+
+                data = {
+                    "template_object": json.dumps({
+                        "object_type": "text",
+                        "text": 'buy' + ticker + ' at' + str(buyprice),
+                        "link": {
+                            "web_url": "www.naver.com"
+                        }
+                    })
+                }
+
+                requests.post(kakao_url, headers=headers, data=data)
 
             # sell here
             if sell_signal and balance == 1:
@@ -81,6 +114,17 @@ while True:
                 balance = 0
                 print('sell at ', sellprice)
                 print('ror is ', ror)
+                data = {
+                    "template_object": json.dumps({
+                        "object_type": "text",
+                        "text": 'sell ' + ticker + ' at' + str(sellprice)+ '\nror is ' + str(ror),
+                        "link": {
+                            "web_url": "www.naver.com"
+                        }
+                    })
+                }
+
+                requests.post(kakao_url, headers=headers, data=data)
 
             if balance == 1:
                 ror_now = (cur_price / buyprice) - fee
@@ -90,7 +134,7 @@ while True:
             if balance == 0:
                 print('10 minute ', ticker, ', ror:', round(ror, 4), ', buy_signal', buy_signal, ', cur_price : ',
                       cur_price,
-                      ', target: ', target_price1, ', balance:', balance,'          ',  end='\r')
+                      ', target: ', target_price1, ', balance:', balance, '          ', end='\r')
 
             time.sleep(0.1)
             if balance == 0 and not buy_signal:
