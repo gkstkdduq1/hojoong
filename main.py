@@ -70,7 +70,7 @@ print(ticker_list)
 while True:
     for ticker in ticker_list:
         while True:
-            url = "https://api.upbit.com/v1/candles/minutes/10"
+            url = "https://api.upbit.com/v1/candles/minutes/60"
 
             querystring = {"market": ticker, "count": "500"}
 
