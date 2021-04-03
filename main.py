@@ -7,7 +7,7 @@ import json
 
 with open("kakao_code.json", "r") as fp:
     tokens = json.load(fp)
-
+'''
 url = "https://kauth.kakao.com/oauth/token"
 data = {
     "grant_type": "refresh_token",
@@ -19,12 +19,23 @@ tokens = response.json()
 
 with open("kakao_code.json", "w") as fp:
     json.dump(tokens, fp)
-
+'''
 kakao_url = "https://kapi.kakao.com/v2/api/talk/memo/default/send"
 
 headers = {
     "Authorization": "Bearer " + tokens["access_token"]
 }
+kakao_data = {
+    "template_object": json.dumps({
+        "object_type": "text",
+        "text": 'Hello, start trading.',
+        "link": {
+            "web_url": "www.naver.com"
+        }
+    })
+}
+
+requests.post(kakao_url, headers=headers, data=kakao_data)
 
 access_key = "Uc7gjRjwxKWtqi3CzE8eBa0GBxKEuvxstqy4VBux"
 secret_key = "BuXKRKaxcPdhL8Htpl1cGsVbqGh0zd10DHVLLxWB"
@@ -95,7 +106,7 @@ while True:
                 balance = 1
                 print('buy', ticker, 'at', buyprice)
 
-                data = {
+                kakao_data = {
                     "template_object": json.dumps({
                         "object_type": "text",
                         "text": 'buy' + ticker + ' at' + str(buyprice),
@@ -105,7 +116,7 @@ while True:
                     })
                 }
 
-                requests.post(kakao_url, headers=headers, data=data)
+                requests.post(kakao_url, headers=headers, data=kakao_data)
 
             # sell here
             if sell_signal and balance == 1:
@@ -114,7 +125,7 @@ while True:
                 balance = 0
                 print('sell at ', sellprice)
                 print('ror is ', ror)
-                data = {
+                kakao_data = {
                     "template_object": json.dumps({
                         "object_type": "text",
                         "text": 'sell ' + ticker + ' at' + str(sellprice)+ '\nror is ' + str(ror),
@@ -124,7 +135,7 @@ while True:
                     })
                 }
 
-                requests.post(kakao_url, headers=headers, data=data)
+                requests.post(kakao_url, headers=headers, data=kakao_data)
 
             if balance == 1:
                 ror_now = (cur_price / buyprice) - fee
