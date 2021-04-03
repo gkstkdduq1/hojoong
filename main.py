@@ -83,10 +83,10 @@ while True:
             df['ma20'] = df['trade_price'].rolling(window=20).mean()
             df['ma50'] = df['trade_price'].rolling(window=50).mean()
             df['sma5_diff'] = df['ma5'].diff()
-            df['range'] = (df['high_price'] - df['low_price']) * 1.0
-            # df['target1'] = df['opening_price'] + df['range'].shift(1)
+            df['range'] = (df['high_price'] - df['low_price']) * 0.5
+            df['target'] = df['opening_price'] + df['range'].shift(1)
             # df['target2'] = df['opening_price'] * 1.003
-            df['target'] = df['opening_price']
+            # df['target'] = df['opening_price']
 
             df = df[-1:]
 
@@ -102,7 +102,7 @@ while True:
             sell_signal = sma5_diff < 0 or cur_price < ma5
             # buy_signal = not sell_signal and cur_price > target_price1 and cur_price > target_price2 and cur_price
             # > ma20 and ma5 > ma20 > ma50
-            buy_signal = cur_price > target_price and cur_price > ma5 > ma20 > ma50
+            buy_signal = cur_price > target_price and cur_price > ma20
 
             # buy here
             if buy_signal and balance == 0:
