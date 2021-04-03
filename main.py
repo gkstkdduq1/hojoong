@@ -36,8 +36,7 @@ print(ticker_list)
 
 while True:
     for ticker in ticker_list:
-        buy_signal = 1
-        while buy_signal:
+        while True:
             url = "https://api.upbit.com/v1/candles/minutes/10"
 
             querystring = {"market": ticker, "count": "500"}
