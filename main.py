@@ -83,22 +83,26 @@ while True:
             df['ma20'] = df['trade_price'].rolling(window=20).mean()
             df['ma50'] = df['trade_price'].rolling(window=50).mean()
             df['sma5_diff'] = df['ma5'].diff()
-            df['range'] = (df['high_price'] - df['low_price']) * 0.7
-            df['target1'] = df['opening_price'] + df['range'].shift(1)
-            df['target2'] = df['opening_price'] * 1.003
+            df['range'] = (df['high_price'] - df['low_price']) * 1.0
+            # df['target1'] = df['opening_price'] + df['range'].shift(1)
+            # df['target2'] = df['opening_price'] * 1.003
+            df['target'] = df['opening_price']
 
             df = df[-1:]
 
             cur_price = pyupbit.get_current_price(ticker)
-            target_price1 = df['target1'].values[0]
-            target_price2 = df['target2'].values[0]
+            target_price = df['target'].values[0]
+            # target_price1 = df['target1'].values[0]
+            # target_price2 = df['target2'].values[0]
             sma5_diff = df['sma5_diff'].values[0]
             ma5 = df['ma5'].values[0]
             ma20 = df['ma20'].values[0]
             ma50 = df['ma50'].values[0]
 
             sell_signal = sma5_diff < 1 or cur_price < ma5
-            buy_signal = not sell_signal and cur_price > target_price1 and cur_price > target_price2 and cur_price > ma20 and ma5 > ma20 > ma50
+            # buy_signal = not sell_signal and cur_price > target_price1 and cur_price > target_price2 and cur_price
+            # > ma20 and ma5 > ma20 > ma50
+            buy_signal = not sell_signal and cur_price > target_price and cur_price > ma5 > ma20 > ma50
 
             # buy here
             if buy_signal and balance == 0:
@@ -128,7 +132,7 @@ while True:
                 kakao_data = {
                     "template_object": json.dumps({
                         "object_type": "text",
-                        "text": 'sell ' + ticker + ' at' + str(sellprice)+ '\nror is ' + str(ror),
+                        "text": 'sell ' + ticker + ' at' + str(sellprice) + '\nror is ' + str(ror),
                         "link": {
                             "web_url": "www.naver.com"
                         }
@@ -141,11 +145,11 @@ while True:
                 ror_now = (cur_price / buyprice) - fee
                 print('10 minute ', ticker, ', ror:', round(ror_now, 4), ', buy_signal', buy_signal, ', cur_price : ',
                       cur_price,
-                      ', target: ', target_price1, ', balance:', balance, '          ', end='\r')
+                      ', target: ', target_price, ', balance:', balance, '          ', end='\r')
             if balance == 0:
                 print('10 minute ', ticker, ', ror:', round(ror, 4), ', buy_signal', buy_signal, ', cur_price : ',
                       cur_price,
-                      ', target: ', target_price1, ', balance:', balance, '          ', end='\r')
+                      ', target: ', target_price, ', balance:', balance, '          ', end='\r')
 
             time.sleep(0.1)
             if balance == 0 and not buy_signal:
