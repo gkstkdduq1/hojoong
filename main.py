@@ -102,7 +102,7 @@ while True:
             sell_signal = sma5_diff < 1 or cur_price < ma5
             # buy_signal = not sell_signal and cur_price > target_price1 and cur_price > target_price2 and cur_price
             # > ma20 and ma5 > ma20 > ma50
-            buy_signal = not sell_signal and cur_price > target_price and cur_price > ma5 > ma20 > ma50
+            buy_signal = cur_price > target_price and cur_price > ma5 > ma20 > ma50
 
             # buy here
             if buy_signal and balance == 0:
