@@ -17,7 +17,7 @@ def trade(upbit, position, ticker):
         bid_price = bids_asks[0]['bid_price']
         price = bid_price
         volume = balance / price
-        ret = upbit.buy_limit_order(ticker, price * 0.9, volume)
+        ret = upbit.buy_limit_order(ticker, price, volume)
     elif position == 'sell':
         balance = float(upbit.get_balances()[1]['balance'])
         bids_asks = orderbook[0]['orderbook_units']
