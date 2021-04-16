@@ -5,6 +5,8 @@ from tqdm import tqdm
 import requests
 import pandas as pd
 import time
+
+import trading
 from kakao import Kakao
 
 # import trading
@@ -130,11 +132,12 @@ while True:
 
                 # buy here
                 if buy_signal and account == 0:
-                    # buyprice, balance = trading.trade(upbit, 'buy', ticker)
-                    orderbook = pyupbit.get_orderbook(ticker)
-                    bids_asks = orderbook[0]['orderbook_units']
-                    bid_price = bids_asks[0]['bid_price']
-                    buyprice = bid_price
+
+                    buyprice, balance = trading.trade(upbit, 'buy', ticker)
+                    # orderbook = pyupbit.get_orderbook(ticker)
+                    # bids_asks = orderbook[0]['orderbook_units']
+                    # bid_price = bids_asks[0]['bid_price']
+                    # buyprice = bid_price
                     #buyprice = pyupbit.get_current_price(ticker)
 
                     account = 1
@@ -145,15 +148,15 @@ while True:
 
                 # sell here
                 if sell_signal and account == 1:
-                    # sellprice, balance = trading.trade(upbit, 'sell', ticker)
-                    orderbook = pyupbit.get_orderbook(ticker)
-                    bids_asks = orderbook[0]['orderbook_units']
-                    ask_price = bids_asks[0]['ask_price']
-                    sellprice = ask_price
+                    sellprice, balance = trading.trade(upbit, 'sell', ticker)
+                    # orderbook = pyupbit.get_orderbook(ticker)
+                    # bids_asks = orderbook[0]['orderbook_units']
+                    # ask_price = bids_asks[0]['ask_price']
+                    # sellprice = ask_price
                     #sellprice = pyupbit.get_current_price(ticker)
                     this_ror = (sellprice / buyprice) - fee
                     ror = ror * this_ror
-                    balance = ror * 10000
+                    # balance = ror * 10000
                     account = 0
 
                     message = f'{ticker}를 {sellprice}에 \n전량매도 했습니다.\n\n매도 체결 후 잔액:\n{balance}원\n\n' \
