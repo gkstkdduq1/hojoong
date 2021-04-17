@@ -19,6 +19,7 @@ RATE = 0.5
 V_RATE = 1.5
 VMA_WINDOW = 60
 MA_WINDOW = 3
+BLACK_LIST = ['KRW-BTT']
 
 def tickSize(price):
     if price > 2000000:
@@ -59,6 +60,7 @@ while True:
 
     url = "https://api.upbit.com/v1/ticker"
     tickers = pyupbit.get_tickers(fiat="KRW")
+    tickers = [x for x in tickers if (x not in BLACK_LIST)]
     trade_price_list = []
     change_list = []
     ticker_idx = []
